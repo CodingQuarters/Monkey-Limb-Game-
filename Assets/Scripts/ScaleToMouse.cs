@@ -1,14 +1,14 @@
 using System.Collections.Generic;
-using Mono.Cecil;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Scripting.APIUpdating;
 
 public class ScaleToMouse : MonoBehaviour
 {
     [SerializeField] private float scaleMultiplier = 0.5f;
     [SerializeField] private float maxLength = 5f;
     [SerializeField] private float minLength = 0.5f;
+    [SerializeField] private float distanceMinToAttach = 2f;
+    public GameObject armTip;
     public GameObject player;
     public BoxCollider arm;
     public AttachHand attachHand;
@@ -25,7 +25,10 @@ public class ScaleToMouse : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        ScaleToMouseAndDirection();
+        if (attachHand.isAttached == false)
+        {
+            ScaleToMouseAndDirection();
+        }
         ClickToGrapple();
     }
     void FixedUpdate()
@@ -44,7 +47,7 @@ public class ScaleToMouse : MonoBehaviour
         Vector3 mouseWorldPoint = mainCamera.ScreenToWorldPoint(mousePosOnScreen);
         Vector3 direction = mouseWorldPoint - transform.position;
         float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-        transform.rotation = Quaternion.Euler(0f, 0f, angle + 90);
+        transform.rotation = Quaternion.Euler(0f, 0f, angle + 270);
 
         Vector2 objectPos2D = new Vector2(transform.position.x, transform.position.y);
         Vector2 mousePos2D = new Vector2(mouseWorldPoint.x, mouseWorldPoint.y);
@@ -59,16 +62,19 @@ public class ScaleToMouse : MonoBehaviour
     {
         if (TryGetClosestLedge(out GameObject bestLedge, out float shortestDistance))
         {
-            if (shortestDistance < 1f)
+            if (shortestDistance < distanceMinToAttach)
             {
-                if (Mouse.current.leftButton.isPressed)
+
+                if (Mouse.current.leftButton.wasPressedThisFrame)
                 {
+                    attachHand.isAttached = true;
                     attachHand.AttachArm(bestLedge);
                     Debug.Log("STarted the to attach the arm");
                 }
             }
             if (Mouse.current.leftButton.wasReleasedThisFrame)
             {
+                attachHand.isAttached = false;
                 attachHand.DetachArm();
                 Debug.Log("Detached the arm");
             }
@@ -81,7 +87,7 @@ public class ScaleToMouse : MonoBehaviour
 
         for (int i = 0; i < Ledges.Count; i++)
         {
-            Vector3 closestEdgePoint = arm.ClosestPoint(Ledges[i].transform.position);
+            Vector3 closestEdgePoint = armTip.transform.position;
             float distance = Vector3.Distance(Ledges[i].transform.position, closestEdgePoint);
             if (distance < shortestDistance)
             {
