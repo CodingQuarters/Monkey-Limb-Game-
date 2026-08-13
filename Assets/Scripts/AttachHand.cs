@@ -1,5 +1,6 @@
 using System.Collections;
 using Unity.Burst.Intrinsics;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 
@@ -9,8 +10,13 @@ public class AttachHand : MonoBehaviour
     //public KeyCode grappleKey = KeyCode.Mouse0; // tells that the primary wa to grapple is throught he left click
     private ConfigurableJoint activeJoint;
     public GameObject body;
-    public Transform armTip;
+    public Transform armHolder;
     public bool isAttached;
+    [SerializeField] private float offSetSnapping;
+    [Header("Settings for dragging")]
+    [SerializeField] private float dragSensitivity = 0.05f;
+    [SerializeField] private float maxDragDistance = 2f;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
 
     void Start()
@@ -43,20 +49,25 @@ public class AttachHand : MonoBehaviour
 
         activeJoint.anchor = Vector3.zero;
 
-        float grabDistance = Vector3.Distance(armTip.position, targetObject.transform.position);
+        float grabDistance = Vector3.Distance(armHolder.position, targetObject.transform.position);
 
         // Lock position to maintain the grab distance
         activeJoint.xMotion = ConfigurableJointMotion.Limited;
         activeJoint.yMotion = ConfigurableJointMotion.Limited;
         activeJoint.zMotion = ConfigurableJointMotion.Limited;
         SoftJointLimit limit = new SoftJointLimit();
-        limit.limit = grabDistance;
+        limit.limit = grabDistance - offSetSnapping;
         limit.contactDistance = 0.01f;
         activeJoint.linearLimit = limit;
         // Allow free swinging rotation
         activeJoint.angularXMotion = ConfigurableJointMotion.Free;
         activeJoint.angularYMotion = ConfigurableJointMotion.Free;
         activeJoint.angularZMotion = ConfigurableJointMotion.Free;
+
+
+        // to drag rotation with the delta
+        
+
     }
     public void DetachArm()
     {
@@ -65,13 +76,15 @@ public class AttachHand : MonoBehaviour
             Destroy(activeJoint);
         }
     }
-    private IEnumerator LookAtLedge( GameObject targetObject)
+    private IEnumerator LookAtLedge(GameObject targetObject)
     {
         while (isAttached)
         {
-            Vector3 targetPosition = new Vector3(targetObject.transform.position.x, armTip.transform.position.y, targetObject.transform.position.z);
 
-            armTip.transform.LookAt(targetPosition);
+            Vector3 direction = targetObject.transform.position - armHolder.transform.position;
+            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+            armHolder.transform.rotation = Quaternion.Euler(0f, 0f, angle + 270);
+
             yield return null;
         }
         Debug.Log("Stopped looking at direction");

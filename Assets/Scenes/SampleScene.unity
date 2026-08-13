@@ -1144,8 +1144,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AttachHand
   body: {fileID: 980426350}
-  armTip: {fileID: 1857102887}
+  armHolder: {fileID: 30004240}
   isAttached: 0
+  offSetSnapping: 1.5
 --- !u!153 &980426354
 ConfigurableJoint:
   m_ObjectHideFlags: 0
