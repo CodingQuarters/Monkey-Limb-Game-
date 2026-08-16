@@ -1,7 +1,5 @@
 using System.Collections;
-using Unity.Burst.Intrinsics;
-using Unity.VisualScripting;
-using UnityEditor;
+using UnityEngine.InputSystem;
 using UnityEngine;
 
 public class AttachHand : MonoBehaviour
@@ -13,7 +11,7 @@ public class AttachHand : MonoBehaviour
     public Transform armHolder;
     public bool isAttached;
     [SerializeField] private float offSetSnapping;
-    [Header("Settings for dragging")]
+    [Header("Settings for dragging - does not work")]
     [SerializeField] private float dragSensitivity = 0.05f;
     [SerializeField] private float maxDragDistance = 2f;
 
@@ -66,7 +64,9 @@ public class AttachHand : MonoBehaviour
 
 
         // to drag rotation with the delta
-        
+        /*Vector3 currentMousePos = Mouse.current.position.ReadValue();
+        Vector3 mouseDelta = currentMousePos - 
+*/
 
     }
     public void DetachArm()
